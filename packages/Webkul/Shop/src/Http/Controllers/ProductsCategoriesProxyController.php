@@ -86,6 +86,9 @@ class ProductsCategoriesProxyController extends Controller
 
             visitor()->visit($product);
 
+            // Track recently viewed products
+            app('product.helpers.recently_viewed')->addProductToRecentlyViewed($product->id);
+
             return view('shop::products.view', compact('product'));
         }
 
