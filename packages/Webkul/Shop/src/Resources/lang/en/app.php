@@ -1312,5 +1312,13 @@ return [
             'tax'                        => 'Tax',
             'tracking-number'            => 'Tracking Number : :tracking_number',
         ],
+
+        'components' => [
+            'products' => [
+                'recently-viewed' => [
+                    'title' => 'Recently Viewed Products',
+                ],
+            ],
+        ],
     ],
 ];
