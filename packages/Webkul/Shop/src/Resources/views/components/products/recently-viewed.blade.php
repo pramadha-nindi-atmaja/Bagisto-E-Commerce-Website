@@ -1,0 +1,142 @@
+<v-recently-viewed-products
+    title="{{ $title ?? __('shop::app.components.products.recently-viewed.title') }}"
+    :product-ids="{{ json_encode($productIds ?? []) }}"
+>
+    <x-shop::shimmer.products.carousel :navigation-link="false" />
+</v-recently-viewed-products>
+
+@pushOnce('scripts')
+    <script
+        type="text/x-template"
+        id="v-recently-viewed-products-template"
+    >
+        <div
+            class="container mt-20 max-lg:px-8 max-md:mt-8 max-sm:mt-7 max-sm:!px-4"
+            v-if="! isLoading && products.length"
+        >
+            <div class="flex justify-between">
+                <h2 class="font-dmserif text-3xl max-md:text-2xl max-sm:text-xl">
+                    @{{ title }}
+                </h2>
+
+                <div class="flex items-center justify-between gap-8">
+                    <template v-if="products.length > 3">
+                        <span
+                            v-if="products.length > 4 || (products.length > 3 && isScreenMax2xl)"
+                            class="icon-arrow-left-stylish rtl:icon-arrow-right-stylish inline-block cursor-pointer text-2xl max-lg:hidden"
+                            role="button"
+                            aria-label="@lang('shop::app.components.products.carousel.previous')"
+                            tabindex="0"
+                            @click="swipeLeft"
+                        >
+                        </span>
+
+                        <span
+                            v-if="products.length > 4 || (products.length > 3 && isScreenMax2xl)"
+                            class="icon-arrow-right-stylish rtl:icon-arrow-left-stylish inline-block cursor-pointer text-2xl max-lg:hidden"
+                            role="button"
+                            aria-label="@lang('shop::app.components.products.carousel.next')"
+                            tabindex="0"
+                            @click="swipeRight"
+                        >
+                        </span>
+                    </template>
+                </div>
+            </div>
+
+            <div
+                ref="swiperContainer"
+                class="flex gap-8 pb-2.5 [&>*]:flex-[0] mt-10 overflow-auto scroll-smooth scrollbar-hide max-md:gap-7 max-md:mt-5 max-sm:gap-4 max-md:pb-0 max-md:whitespace-nowrap"
+            >
+                <x-shop::products.card
+                    class="min-w-[291px] max-md:h-fit max-md:min-w-56 max-sm:min-w-[192px]"
+                    v-for="product in products"
+                />
+            </div>
+        </div>
+
+        <!-- Product Card Listing -->
+        <template v-if="isLoading">
+            <x-shop::shimmer.products.carousel :navigation-link="false" />
+        </template>
+    </script>
+
+    <script type="module">
+        app.component('v-recently-viewed-products', {
+            template: '#v-recently-viewed-products-template',
+
+            props: [
+                'title',
+                'productIds',
+            ],
+
+            data() {
+                return {
+                    isLoading: true,
+
+                    products: [],
+
+                    offset: 323,
+
+                    isScreenMax2xl: window.innerWidth <= 1440,
+                };
+            },
+
+            mounted() {
+                this.getProducts();
+            },
+
+            created() {
+                window.addEventListener('resize', this.updateScreenSize);
+            },
+
+            beforeDestroy() {
+                window.removeEventListener('resize', this.updateScreenSize);
+            },
+
+            methods: {
+                getProducts() {
+                    if (! this.productIds.length) {
+                        this.isLoading = false;
+                        
+                        return;
+                    }
+
+                    this.$axios.post('{{ route("shop.api.products.index") }}', {
+                            product_ids: this.productIds
+                        })
+                        .then(response => {
+                            this.isLoading = false;
+
+                            this.products = response.data.data;
+                        }).catch(error => {
+                            console.log(error);
+                        });
+                },
+
+                updateScreenSize() {
+                    this.isScreenMax2xl = window.innerWidth <= 1440;
+                },
+
+                swipeLeft() {
+                    const container = this.$refs.swiperContainer;
+
+                    container.scrollLeft -= this.offset;
+                },
+
+                swipeRight() {
+                    const container = this.$refs.swiperContainer;
+
+                    // Check if scroll reaches the end
+                    if (container.scrollLeft + container.clientWidth >= container.scrollWidth) {
+                        // Reset scroll to the beginning
+                        container.scrollLeft = 0;
+                    } else {
+                        // Scroll to the right
+                        container.scrollLeft += this.offset;
+                    }
+                },
+            },
+        });
+    </script>
+@endPushOnce
