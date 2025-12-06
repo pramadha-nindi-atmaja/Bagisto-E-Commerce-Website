@@ -5,6 +5,7 @@ namespace Webkul\Product\Providers;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 use Webkul\Product\Console\Commands\Indexer;
+use Webkul\Product\Helpers\RecentlyViewed;
 use Webkul\Product\Models\ProductProxy;
 use Webkul\Product\Observers\ProductObserver;
 
@@ -20,6 +21,12 @@ class ProductServiceProvider extends ServiceProvider
         $this->registerConfig();
 
         $this->registerCommands();
+
+        $this->app->singleton('product.helpers.recently_viewed', function ($app) {
+            return new RecentlyViewed(
+                $app['Webkul\Product\Repositories\ProductRepository']
+            );
+        });
     }
 
     /**
