@@ -25,6 +25,25 @@ class ProductController extends APIController
      */
     public function index(): JsonResource
     {
+        // Handle recently viewed products request
+        if (request()->has('product_ids')) {
+            $productIds = request()->input('product_ids');
+            
+            if (! is_array($productIds)) {
+                $productIds = [];
+            }
+            
+            $products = $this->productRepository
+                ->setSearchEngine('database')
+                ->findWhere([
+                    ['id', 'in', $productIds],
+                    ['status', '=', 1],
+                    ['visible_individually', '=', 1],
+                ]);
+                
+            return ProductResource::collection($products);
+        }
+
         $searchEngine = 'database';
 
         if (core()->getConfigData('catalog.products.search.engine') == 'elastic') {

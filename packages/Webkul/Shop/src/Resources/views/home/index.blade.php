@@ -1,5 +1,8 @@
+@inject ('recentlyViewedHelper', 'product.helpers.recently_viewed')
+
 @php
     $channel = core()->getCurrentChannel();
+    $recentlyViewedProducts = $recentlyViewedHelper->getRecentlyViewedProducts();
 @endphp
 
 <!-- SEO Meta Content -->
@@ -84,4 +87,11 @@
                 @break
         @endswitch
     @endforeach
+
+    <!-- Recently Viewed Products -->
+    @if (count($recentlyViewedProducts) > 0)
+        <x-shop::products.recently-viewed
+            :product-ids="collect($recentlyViewedProducts)->pluck('id')->toArray()"
+        />
+    @endif
 </x-shop::layouts>
